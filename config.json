@@ -1,0 +1,19 @@
+{
+    "token": "bot_token",
+    "prefix": "-",
+	"guild": "guild_id",
+	
+	"commandsChannel": "channel_id (optional)",
+	"deleteCommands": true,
+	"deleteResponseSecs": 6,
+
+    "modRoles": ["Administrator", "Moderator"],
+	
+    "serverList": {
+        "channel": "channel_id",
+		"message": "message_id",
+		"updateIntervalSecs": 60,
+		"specialChannelName": true,
+		"embedColour": 3447003
+    }
+}
