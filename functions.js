@@ -10,7 +10,7 @@ module.exports = {
 		if (/<@&\d+>/.test(role) || !isNaN(role)) { //mention or ID
 			role = index.client.guilds.get(config.guild).roles.get(role.match(/\d+/)[0]);
 		} else { //name
-			role = index.client.guilds.get(config.guild).roles.find(x => x.name.toUpperCase() === role.toUpperCase());
+			role = index.client.guilds.get(config.guild).roles.find(x => x.name.toLowerCase() === role.toLowerCase());
 		}
 		return role || null;
 	},
@@ -24,10 +24,10 @@ module.exports = {
 			user = index.client.guilds.get(config.guild).members.array().find(x => user === `${x.user.username}#${x.user.discriminator}`);
 		} else { //name
 			let guildMembers = index.client.guilds.get(config.guild).members;
-			user = guildMembers.find(x => x.user.username.toUpperCase() === user.toUpperCase())
-				|| guildMembers.find(x => (x.nickname || x.user.username).toUpperCase() === user.toUpperCase())
-				|| guildMembers.find(x => x.user.username.toUpperCase().includes(user.toUpperCase()))
-				|| guildMembers.find(x => (x.nickname || x.user.username).toUpperCase().includes(user.toUpperCase()));
+			user = guildMembers.find(x => x.user.username.toLowerCase() === user.toLowerCase())
+				|| guildMembers.find(x => (x.nickname || x.user.username).toLowerCase() === user.toLowerCase())
+				|| guildMembers.find(x => x.user.username.toLowerCase().includes(user.toLowerCase()))
+				|| guildMembers.find(x => (x.nickname || x.user.username).toLowerCase().includes(user.toLowerCase()));
 		}
 		return user || null;
 	},
@@ -121,10 +121,10 @@ module.exports = {
 		
         servers.sort((a, b) => {
             if (a.currentPlayers === b.currentPlayers) {
-				if (a.name.toUpperCase() === b.name.toUpperCase()) {
+				if (a.name.toLowerCase() === b.name.toLowerCase()) {
 					return `${a.IPv4Address}:${a.port}`.localeCompare(`${b.IPv4Address}:${b.port}`);
 				}
-                return a.name.toUpperCase().localeCompare(b.name.toUpperCase());
+                return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
             }
             return b.currentPlayers - a.currentPlayers;
 		});
@@ -133,7 +133,7 @@ module.exports = {
 		
         for (let server of servers) {
             server.playerList.sort((a, b) => {
-                return a.toUpperCase().localeCompare(b.toUpperCase());
+                return a.toLowerCase().localeCompare(b.toLowerCase());
             });
 		}
 		
@@ -153,7 +153,7 @@ module.exports = {
 		let totalPlayers = servers.reduce((t, x) => t + x.currentPlayers, 0);
 
 		const embed = new Discord.RichEmbed()
-			.setTitle(":crossed_swords:   KAG Server List   :bow_and_arrow:")
+			.setTitle(":crossed_swords: KAG Server List :bow_and_arrow:")
 			.setColor(config.serverList.embedColour)
 			.setDescription(`${totalServers} ${this.plural(totalServers, "server")} with ${totalPlayers} ${this.plural(totalPlayers, "player")}\n​`)
 			.setFooter("Last updated")
@@ -166,16 +166,25 @@ module.exports = {
 				count++;
 				if (!data) return;
 				server.region = data.country;
+
 				//add servers to embed once we have all flags
 				if (count === servers.length) {
 					for (let server of servers) {
+
+						let description = server.description;
+						if (server.usingMods) {
+							description = description.replace(/(\n\n|\n$)[^\n]*$/, "");
+						}
 						let spectators = server.spectatorPlayers ? ` (${server.spectatorPlayers} ${this.plural(server.spectatorPlayers, "spectator")})` : "";
+
+						//escape underscores so they dont italicise the text
 						let text = [
-							`**Address:** ${server.password ? "locked server" : `<kag://${server.IPv4Address}:${server.port}>`}`,
-							`**Gamemode:** ${server.gameMode}`,
+							`**Description:** ${description.length ? description.replace(/_/g, "\\_") : "*no description*"}`,
+							`**Address:** ${server.password ? "*locked server*" : `<kag://${server.IPv4Address}:${server.port}>`}`,
+							`**Gamemode:** ${server.gameMode.replace(/_/g, "\\_")}`,
 							`**Players:** ${server.currentPlayers}/${server.maxPlayers}${spectators}`,
-							`${server.playerList.join(" ")}`,
-							"​" //zero-width character
+							server.playerList.join(" ").replace(/_/g, "\\_"),
+							"​" //zero-width character for spacing
 						].sort(Boolean).join("\n");
 
 						//truncate text if too long
