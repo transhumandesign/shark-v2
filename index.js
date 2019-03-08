@@ -1,22 +1,17 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
-const config = require("./config.json");
-const func = require("./functions.js");
-exports.client = client;
 
-var serverList;
+const config = require("./config.json");
+const util = require("./modules/util.js");
+util.init(client);
+const serverlist = require("./modules/serverlist.js");
 
 client.on("error", console.error);
 
 client.on("ready", () => {
-	console.log(`Logged in as ${client.user.username} on ${client.guilds.size} ${func.plural(client.guilds.size, "guild")}`);
+	console.log(`Logged in as ${client.user.username} on ${client.guilds.size} ${util.plural(client.guilds.size, "guild")}`);
 
-	func.fetchMessage(message => {
-		console.log(`Fetched server list message in #${message.channel.name}`);
-		serverList = message;
-		loop();
-	}, config.serverList);
-
+	serverlist.init(client);
 });
 
 client.on("message", async message => {
@@ -33,61 +28,61 @@ client.on("message", async message => {
 	const command = args.shift().toLowerCase();
 
 	//delete commands not sent in commands channel
-	if (config.commandsChannel &&									//commands channel is specified
-		func.getChannel(message.channel) !== config.commandsChannel	//message sent in wrong channel
+	if (config.commands_channel &&									//commands channel is specified
+		util.getChannel(message.channel) !== config.commands_channel	//message sent in wrong channel
 	) {
-		func.deleteMessage(message);
+		util.deleteMessage(message);
 		return;
 	}
 
 	if (command === "ping") {
-		if (config.deleteCommands) {
-			func.deleteMessage(message);
+		if (config.delete_commands) {
+			util.deleteMessage(message);
 		}
 		
-		func.sendMessage(message.channel, `Pong! Latency: ${Math.round(client.ping)}ms`);
+		util.sendMessage(message.channel, `Pong! Latency: ${Math.round(client.ping)}ms`);
 	}
 
 	if (command === "prune" || command === "purge") {
-		if (config.deleteCommands) {
-			func.deleteMessage(message);
+		if (config.delete_commands) {
+			util.deleteMessage(message);
 		}
 
-		if (!func.isMod(message.author)) {
-			return func.sendMessage(message.channel, `You aren't able to ${command} messages, ${message.author.toString()}`, config.deleteResponseSecs * 1000);
+		if (!util.isMod(message.author)) {
+			return util.sendMessage(message.channel, `You aren't able to ${command} messages, ${message.author.toString()}`, true);
 		}
 		
 		let amount = args[0];
 		if (isNaN(amount)) {
-			return func.sendMessage(message.channel, `Invalid command usage: \`!${command} [amount]\``, config.deleteResponseSecs * 1000);
+			return util.sendMessage(message.channel, `Invalid command usage: \`!${command} [amount]\``, true);
 		}
 
 		if (args[0] > 99) { //too many messages
-			return func.sendMessage(message.channel, `You can only ${command} less than 100 messages`, config.deleteResponseSecs * 1000);
+			return util.sendMessage(message.channel, `You can only ${command} less than 100 messages`, true);
 		}
 
 		message.channel.fetchMessages({ limit: +args[0] + 1 }).then(messages => message.channel.bulkDelete(messages));
 	}
 
 	if (command === "find") {
-		if (config.deleteCommands) {
-			func.deleteMessage(message);
+		if (config.delete_commands) {
+			util.deleteMessage(message);
 		}
 
 		let msg = await message.channel.send("Finding player...");
 		let username = args[0];
-		func.XMLHttpRequest(info => {
+		util.XMLHttpRequest(info => {
 			if (!info) { //doesnt exist
-				return func.editMessage(msg, `**${username}** doesn't exist`, config.deleteResponseSecs * 1000);
+				return util.editMessage(msg, `**${username}** doesn't exist`, true);
 			}
 
 			username = info.playerInfo.username;
 
 			if (!info.playerInfo.gold) { //not gold
-				return func.editMessage(msg, `**${username}** doesn't own KAG`, config.deleteResponseSecs * 1000);
+				return util.editMessage(msg, `**${username}** doesn't own KAG`, true);
 			}
 			
-			func.XMLHttpRequest(servers => {
+			util.XMLHttpRequest(servers => {
 				for (let server of servers.serverList) {
 					for (let player of server.playerList) {
 						if (player === username) { //player on server
@@ -96,34 +91,16 @@ client.on("message", async message => {
 								text += `\n<kag://${server.IPv4Address}:${server.port}>`;
 							}
 
-							return func.editMessage(msg, text, config.deleteResponseSecs * 1000);
+							return util.editMessage(msg, text, true);
 						}
 					}
 				}
 
 				//player not on server
-				return func.editMessage(msg, `**${username}** isn't on a server`, config.deleteResponseSecs * 1000);
+				return util.editMessage(msg, `**${username}** isn't on a server`, true);
 			}, 'https://api.kag2d.com/v1/game/thd/kag/servers?filters=[{"field":"current","op":"eq","value":"true"},{"field":"connectable","op":"eq","value":true},{"field":"currentPlayers","op":"gt","value":"0"}]');
 		}, `https://api.kag2d.com/v1/player/${username}`);
 	}
 });
-
-function loop() {	
-	func.XMLHttpRequest(servers => {
-		
-		servers = func.sortServers(servers);
-
-		func.updateServerList(serverList, servers);
-
-		let totalPlayers = servers.reduce((t, x) => t + x.currentPlayers, 0);
-		client.user.setPresence({ status: 'online', game: { name: `${totalPlayers} in KAG | ${config.prefix}help` } });
-
-	}, 'https://api.kag2d.com/v1/game/thd/kag/servers?filters=[{"field":"current","op":"eq","value":"true"},{"field":"connectable","op":"eq","value":true},{"field":"currentPlayers","op":"gt","value":"0"}]');
-	
-	//loop every minute
-	let ms = config.serverList.updateIntervalSecs * 1000;
-	let delay = ms - new Date() % ms;
-	setTimeout(loop, delay);
-}
 
 client.login(config.token);
