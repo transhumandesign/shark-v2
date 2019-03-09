@@ -12,6 +12,7 @@ client.on("ready", () => {
 	console.log(`Logged in as ${client.user.username} on ${client.guilds.size} ${util.plural(client.guilds.size, "guild")}`);
 
 	serverlist.init(client);
+	util.updatePresence();
 });
 
 client.on("message", async message => {
