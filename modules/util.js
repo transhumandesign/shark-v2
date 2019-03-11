@@ -73,7 +73,7 @@ exports.sendMessage = (channel, text, delete_message = 0) => {
 			this.deleteMessage(message, config.delete_response_secs * 1000);
 		}
 	}).catch(err => {
-		console.log(`ERROR: Couldn't send message in #${message.channel.name} - ${err}`);
+		console.log(`ERROR: Couldn't send message in #${message.channel.name} - ${err.message}`);
 	});
 }
 
@@ -83,7 +83,7 @@ exports.editMessage = (message, text, delete_message = 0) => {
 			this.deleteMessage(message, config.delete_response_secs * 1000);
 		}
 	}).catch(err => {
-		console.log(`ERROR: Couldn't edit message in #${message.channel.name} - ${err}`);
+		console.log(`ERROR: Couldn't edit message in #${message.channel.name} - ${err.message}`);
 	});
 }
 
@@ -91,12 +91,12 @@ exports.deleteMessage = (message, delete_message = 0) => {
 	if (delete_message) {
 		setTimeout(() => {
 			message.delete().catch(err => {
-				console.log(`ERROR: Couldn't auto delete message in #${message.channel.name} - ${err}`);
+				console.log(`ERROR: Couldn't auto delete message in #${message.channel.name} - ${err.message}`);
 			});
 		}, config.delete_response_secs * 1000);
 	} else {
 		message.delete().catch(err => {
-			console.log(`ERROR: Couldn't delete message in #${message.channel.name} - ${err}`);
+			console.log(`ERROR: Couldn't delete message in #${message.channel.name} - ${err.message}`);
 		});
 	}
 }
@@ -110,7 +110,7 @@ exports.fetchMessage = (callback, cfg_group) => {
 	channel.fetchMessage(cfg_group.message).then(message => {
 		return callback(message);
 	}).catch(err => {
-		console.log(`ERROR: Couldn't fetch message from #${channel.name} - ${err}`);
+		console.log(`ERROR: Couldn't fetch message from #${channel.name} - ${err.message}`);
 	});
 }
 

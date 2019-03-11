@@ -17,7 +17,7 @@ client.on("ready", () => {
 
 client.on("message", async message => {
 	if (
-		!message.channel.guild ||						//direct message
+		!message.guild ||								//direct message
 		message.guild.id !== config.guild ||			//wrong guild
 		message.author.bot ||							//bot message
 		message.content.indexOf(config.prefix) !== 0	//wrong/no prefix
