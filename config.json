@@ -1,19 +1,19 @@
 {
-    "token": "bot_token",
-    "prefix": "-",
-	"guild": "guild_id",
+    "token": "",
+    "prefix": "!",
+	"guild": "",
 	
-	"commandsChannel": "channel_id (optional)",
-	"deleteCommands": true,
-	"deleteResponseSecs": 6,
+	"commands_channel": "",
+	"delete_commands": false,
+	"delete_response_secs": 6,
 
-    "modRoles": ["Administrator", "Moderator"],
+    "mod_roles": [""],
 	
-    "serverList": {
-        "channel": "channel_id",
-		"message": "message_id",
-		"updateIntervalSecs": 60,
-		"specialChannelName": true,
-		"embedColour": 3447003
+    "server_list": {
+        "channel": "",
+		"message": "",
+		"update_interval_secs": 60,
+		"special_channel_name": true,
+		"embed_colour": 3447003
     }
 }
