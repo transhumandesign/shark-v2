@@ -53,12 +53,11 @@ exports.plural = (val, text, suffix = "s") => {
 
 exports.XMLHttpRequest = (callback, url) => {
 	let xhttp = new XMLHttpRequest();
-	xhttp.onreadystatechange = function () {
-		if (this.readyState == 4 && this.status == 200) {
+	xhttp.onload = function() {
+		if (this.status === 200) {
 			return callback(JSON.parse(xhttp.responseText));
-		}
-		if (this.readyState == 4 && this.status == 404) {
-			console.log("ERROR: Couldn't retrieve JSON from URL");
+		} else {
+			console.log(`ERROR: Couldn't retrieve data from ${url}`);
 			return callback(null);
 		}
 	}
@@ -110,8 +109,8 @@ exports.fetchMessage = (callback, cfg_group) => {
 	}
 	channel.fetchMessage(cfg_group.message).then(message => {
 		return callback(message);
-	}).catch(() => {
-		console.log(`ERROR: Couldn't fetch message from #${channel.name}`);
+	}).catch(err => {
+		console.log(`ERROR: Couldn't fetch message from #${channel.name} - ${err}`);
 	});
 }
 
@@ -121,7 +120,7 @@ exports.sortServers = (servers) => {
     } else {
         return null;
 	}
-	
+
     servers.sort((a, b) => {
         if (a.currentPlayers === b.currentPlayers) {
 			if (a.name.toLowerCase() === b.name.toLowerCase()) {
@@ -133,13 +132,13 @@ exports.sortServers = (servers) => {
 	});
 
 	servers = servers.slice(0, 25);
-	
+
     for (let server of servers) {
         server.playerList.sort((a, b) => {
             return a.toLowerCase().localeCompare(b.toLowerCase());
         });
 	}
-	
+
     return servers;
 }
 

@@ -29,7 +29,8 @@ client.on("message", async message => {
 	const command = args.shift().toLowerCase();
 
 	//delete commands not sent in commands channel
-	if (config.commands_channel &&									//commands channel is specified
+	if (
+		config.commands_channel &&										//commands channel is specified
 		util.getChannel(message.channel) !== config.commands_channel	//message sent in wrong channel
 	) {
 		util.deleteMessage(message);
@@ -40,11 +41,21 @@ client.on("message", async message => {
 		if (config.delete_commands) {
 			util.deleteMessage(message);
 		}
-		
-		util.sendMessage(message.channel, `Pong! Latency: ${Math.round(client.ping)}ms`);
+
+		//dont auto delete message if moderator sent command
+		//used for initially creating server list message
+		util.sendMessage(message.channel, `Pong! Latency: ${Math.round(client.ping)}ms`, !util.isMod(message.author));
 	}
 
-	if (command === "prune" || command === "purge") {
+	if (["author", "creator"].includes(command)) {
+		if (config.delete_commands) {
+			util.deleteMessage(message);
+		}
+
+		util.sendMessage(message.channel, `${client.user.username} was created by epsilon and Mazey`, true);
+	}
+
+	if (["prune", "purge"].includes(command)) {
 		if (config.delete_commands) {
 			util.deleteMessage(message);
 		}
@@ -52,7 +63,7 @@ client.on("message", async message => {
 		if (!util.isMod(message.author)) {
 			return util.sendMessage(message.channel, `You aren't able to ${command} messages, ${message.author.toString()}`, true);
 		}
-		
+
 		let amount = args[0];
 		if (isNaN(amount)) {
 			return util.sendMessage(message.channel, `Invalid command usage: \`!${command} [amount]\``, true);
@@ -82,7 +93,7 @@ client.on("message", async message => {
 			if (!info.playerInfo.gold) { //not gold
 				return util.editMessage(msg, `**${username}** doesn't own KAG`, true);
 			}
-			
+
 			util.XMLHttpRequest(servers => {
 				for (let server of servers.serverList) {
 					for (let player of server.playerList) {

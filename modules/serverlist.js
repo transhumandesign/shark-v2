@@ -9,22 +9,20 @@ exports.init = (cl) => {
 	client = cl;
 	util.init(cl);
 	util.fetchMessage(message => {
+		if (!message) return;
+
 		console.log(`Fetched server list message in #${message.channel.name}`);
 		server_list = message;
 		getServerList();
 	}, config.server_list);
 }
 
-
-
-function getServerList() {	
+function getServerList() {
 	util.XMLHttpRequest(servers => {
-		
 		servers = util.sortServers(servers);
 		updateServerList(server_list, servers);
-
 	}, 'https://api.kag2d.com/v1/game/thd/kag/servers?filters=[{"field":"current","op":"eq","value":"true"},{"field":"connectable","op":"eq","value":true},{"field":"currentPlayers","op":"gt","value":"0"}]');
-	
+
 	//loop every minute
 	let ms = config.server_list.update_interval_secs * 1000;
 	let delay = ms - new Date() % ms;
@@ -33,7 +31,7 @@ function getServerList() {
 
 function updateServerList(message, servers) {
 	if (!message) return;
-	
+
     let total_servers = servers.length;
 	let total_players = servers.reduce((t, x) => t + x.currentPlayers, 0);
 
@@ -43,7 +41,7 @@ function updateServerList(message, servers) {
 		.setDescription(`${total_servers} ${util.plural(total_servers, "server")} with ${total_players} ${util.plural(total_players, "player")}\n​`)
 		.setFooter("Last updated")
 		.setTimestamp();
-	
+
 	let count = 0;
 	for (let server of servers) {
 		//get flag for each server
@@ -87,8 +85,8 @@ function updateServerList(message, servers) {
 				util.editMessage(message, embed);
 
 				if (config.server_list.special_channel_name) {
-					message.channel.setName(`${total_servers}-servers_${total_players}-players`).catch(() => {
-						console.log(`ERROR: Couldn't change name of #${message.channel.name}`);
+					message.channel.setName(`${total_servers}-servers_${total_players}-players`).catch(err => {
+						console.log(`ERROR: Couldn't change name of #${message.channel.name} - ${err}`);
 					});
 				}
 			}
