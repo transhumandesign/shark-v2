@@ -1,21 +1,21 @@
 {
-    "token": "",
-    "prefix": "!",
+	"token": "",
+	"prefix": "!",
 	"guild": "",
 
 	"commands_channel": "",
 	"delete_commands": false,
 	"delete_response_secs": 6,
 
-    "mod_roles": [""],
+	"mod_roles": [""],
 	"region_roles": [""],
 
 	"update_interval_secs": 60,
 
-    "server_list": {
-        "channel": "",
+	"server_list": {
+		"channel": "",
 		"message": "",
 		"special_channel_name": true,
 		"embed_colour": 3447003
-    }
+	}
 }
