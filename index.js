@@ -192,7 +192,7 @@ function getServers() {
 	}, 'https://api.kag2d.com/v1/game/thd/kag/servers?filters=[{"field":"current","op":"eq","value":"true"},{"field":"connectable","op":"eq","value":true},{"field":"currentPlayers","op":"gt","value":"0"}]');
 
 	//loop every minute
-	let ms = config.server_list.update_interval_secs * 1000;
+	let ms = config.update_interval_secs * 1000;
 	let delay = ms - new Date() % ms;
 	setTimeout(getServers, delay);
 }

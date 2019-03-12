@@ -10,10 +10,11 @@
     "mod_roles": [""],
 	"region_roles": [""],
 
+	"update_interval_secs": 60,
+
     "server_list": {
         "channel": "",
 		"message": "",
-		"update_interval_secs": 60,
 		"special_channel_name": true,
 		"embed_colour": 3447003
     }
