@@ -2,13 +2,14 @@
     "token": "",
     "prefix": "!",
 	"guild": "",
-	
+
 	"commands_channel": "",
 	"delete_commands": false,
 	"delete_response_secs": 6,
 
     "mod_roles": [""],
-	
+	"region_roles": [""],
+
     "server_list": {
         "channel": "",
 		"message": "",

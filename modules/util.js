@@ -65,10 +65,10 @@ exports.XMLHttpRequest = (callback, url) => {
 	xhttp.send();
 }
 
-exports.sendMessage = (channel, text, delete_message = 0) => {
-    channel = this.getChannel(channel);
-    if (!channel) return null;
-    channel.send(text).then(message => {
+exports.sendMessage = (channel, text, delete_message = false) => {
+	channel = this.getChannel(channel);
+	if (!channel) return;
+	channel.send(text).then(message => {
 		if (delete_message) {
 			this.deleteMessage(message, config.delete_response_secs * 1000);
 		}
@@ -77,7 +77,8 @@ exports.sendMessage = (channel, text, delete_message = 0) => {
 	});
 }
 
-exports.editMessage = (message, text, delete_message = 0) => {
+exports.editMessage = (message, text, delete_message = false) => {
+	if (!message) return;
 	message.edit(text).then(message => {
 		if (delete_message) {
 			this.deleteMessage(message, config.delete_response_secs * 1000);
@@ -88,6 +89,7 @@ exports.editMessage = (message, text, delete_message = 0) => {
 }
 
 exports.deleteMessage = (message, delete_message = 0) => {
+	if (!message) return;
 	if (delete_message) {
 		setTimeout(() => {
 			message.delete().catch(err => {
@@ -115,31 +117,33 @@ exports.fetchMessage = (callback, cfg_group) => {
 }
 
 exports.sortServers = (servers) => {
+	if (!servers) return null;
+
 	if (servers.hasOwnProperty("serverList")) {
-        servers = servers.serverList;
-    } else {
-        return null;
+		servers = servers.serverList;
+	} else {
+		return null;
 	}
 
-    servers.sort((a, b) => {
-        if (a.currentPlayers === b.currentPlayers) {
+	servers.sort((a, b) => {
+		if (a.currentPlayers === b.currentPlayers) {
 			if (a.name.toLowerCase() === b.name.toLowerCase()) {
 				return `${a.IPv4Address}:${a.port}`.localeCompare(`${b.IPv4Address}:${b.port}`);
 			}
-            return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-        }
-        return b.currentPlayers - a.currentPlayers;
+			return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+		}
+		return b.currentPlayers - a.currentPlayers;
 	});
 
 	servers = servers.slice(0, 25);
 
-    for (let server of servers) {
-        server.playerList.sort((a, b) => {
-            return a.toLowerCase().localeCompare(b.toLowerCase());
-        });
+	for (let server of servers) {
+		server.playerList.sort((a, b) => {
+			return a.toLowerCase().localeCompare(b.toLowerCase());
+		});
 	}
 
-    return servers;
+	return servers;
 }
 
 exports.isMod = (user) => {
@@ -148,15 +152,7 @@ exports.isMod = (user) => {
 	});
 }
 
-exports.updatePresence = () => {
-	this.XMLHttpRequest(servers => {
-		servers = this.sortServers(servers);
-		let total_players = servers.reduce((t, x) => t + x.currentPlayers, 0);
+exports.updatePresence = (servers) => {
+		let total_players = servers ? servers.reduce((t, x) => t + x.currentPlayers, 0) : 0;
 		client.user.setActivity(`${total_players} in KAG | ${config.prefix}help`, { type: 'WATCHING' });
-	}, 'https://api.kag2d.com/v1/game/thd/kag/servers?filters=[{"field":"current","op":"eq","value":"true"},{"field":"connectable","op":"eq","value":true},{"field":"currentPlayers","op":"gt","value":"0"}]');
-
-	//loop every minute
-	let ms = config.server_list.update_interval_secs * 1000;
-	let delay = ms - new Date() % ms;
-	setTimeout(this.updatePresence, delay);
 }
