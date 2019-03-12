@@ -4,7 +4,9 @@ const client = new Discord.Client();
 const config = require("./config.json");
 const util = require("./modules/util.js");
 util.init(client);
+
 const serverlist = require("./modules/serverlist.js");
+const roles = require("./modules/roles.js");
 
 client.on("error", console.error);
 
@@ -146,41 +148,12 @@ client.on("message", async message => {
 		return message.author.send("**Commands:**\n" + commands.join("\n"));
 	}
 
-	if (command === "region") {
-		//ensure region is specified
-		if (!args[0]) {
-			return util.sendMessage(message.channel, `Invalid command usage: \`!${command} [${config.region_roles.join("/")}]\``, true);
+	if (command === "role") {
+		if (config.delete_commands) {
+			util.deleteMessage(message);
 		}
-
-		//ensure role exists
-		let role = util.getRole(args[0]);
-		if (!role) {
-			return util.sendMessage(message.channel, `A role with the name **${args[0]}** doesn't exist`, true);
-		}
-
-		//check if user already has the role
-		if (util.userHasRole(message.author, role)) {
-			return util.sendMessage(message.channel, `You already have the **${role.name}** role`, true);
-		}
-
-		//immediately send response
-		let msg = await message.channel.send("Organising roles...").catch(err => {
-			console.log(`ERROR: Couldn't send message in #${message.channel.name} - ${err.message}`);
-		});
-
-		//only one region is allowed
-		let roles = config.region_roles.map(x => util.getRole(x)).filter(x => util.userHasRole(message.author, x));
-		message.member.removeRoles(roles).then(() => {
-			message.member.addRole(role).then(() => { //success
-				return util.editMessage(msg, `You now have the **${role.name}** role`, true);
-			}, err => { //addRole error
-				console.log(`ERROR: Couldn't add ${role.name} role to ${message.author.username} - ${err.message}`);
-				return util.editMessage(msg, `There was an issue adding the **${role.name}** role`, true);
-			});
-		}, err => { //removeRoles error
-			console.log(`ERROR: Couldn't remove a role from ${message.author.username} - ${err.message}`);
-			return util.editMessage(msg, "There was an issue removing the other region roles", true);
-		});
+		
+		roles.onCommand(message.member, args);
 	}
 });
 
