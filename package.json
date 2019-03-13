@@ -2,6 +2,8 @@
   "name": "shark-v2",
   "author": "epsilon & Mazey",
   "version": "1.0",
+  "description": "A better King Arthur's Gold Discord bot",
+  "homepage": "https://github.com/transhumandesign/shark-v2",
   "main": "index.js",
   "dependencies": {
     "discord.js": "^11.4.2",
