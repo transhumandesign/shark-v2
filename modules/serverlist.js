@@ -19,27 +19,23 @@ exports.init = (cl) => {
 exports.update = (servers) => {
 	if (!server_list) return;
 
-	if (servers) {
-		if (servers.length) {
-			let count = 0;
-			for (let server of servers) {
-				//get flag for each server
-				util.XMLHttpRequest(data => {
-					count++;
-					if (!data) return;
-					server.region = data.country;
+	if (servers && servers.length) {
+		let count = 0;
+		for (let server of servers) {
+			//get flag for each server
+			util.XMLHttpRequest(data => {
+				count++;
+				if (!data) return;
+				server.region = data.country;
 
-					//add servers to embed once we have all flags
-					if (count === servers.length) {
-						createEmbed(servers);
-					}
-				}, `https://get.geojs.io/v1/ip/country/${server.IPv4Address}.json`);
-			}
-		} else {
-			createEmbed(servers);
+				//add servers to embed once we have all flags
+				if (count === servers.length) {
+					createEmbed(servers);
+				}
+			}, `https://get.geojs.io/v1/ip/country/${server.IPv4Address}.json`);
 		}
 	} else {
-		createEmbed(null);
+		createEmbed(servers);
 	}
 }
 
