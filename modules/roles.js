@@ -1,39 +1,69 @@
 const config = require("../config.json");
 const util = require("./util.js");
 
-function doRole(member, name) {
-	var regional = false;
+exports.onCommand = async (message, args) => {
+	let available_roles = [...config.regional_roles, ...config.open_roles].filter(x => util.getRole(x));
 
-	var regional_role = config.regional_roles[config.regional_roles.join("\u200b").toLowerCase().split("\u200b").indexOf(name.toLowerCase())];
-	var open_role = config.open_roles[config.open_roles.join("\u200b").toLowerCase().split("\u200b").indexOf(name.toLowerCase())];
-	var role_name =  regional_role || open_role;
+	//ensure role is specified
+	if (!args[0]) {
+		return util.sendMessage(message.channel, `Invalid command usage: \`!${command} [${available_roles.join("/")}]\``, true);
+	}
 
-	if (role_name == undefined) return;
-	if (role_name == regional_role) regional = true;
+	//ensure role exists
+	let role = util.getRole(args[0]);
+	if (!role) {
+		return util.sendMessage(message.channel, `A role with the name **${args[0]}** doesn't exist\nAvailable roles: ${available_roles.join(", ")}`, true);
+	}
 
-	var role = util.getRole(role_name); // if this returns null there is an issue in config
+	//ensure role is one that can be self-given
+	let can_add_role = available_roles.some(x => util.getRole(x) === role);
+	if (!can_add_role) {
+		return util.sendMessage(message.channel, `You are unable to add the **${role.name}** role to yourself\nAvailable roles: ${available_roles.join(", ")}`, true);
+	}
 
-	var has_role = member.roles.has(role.id);
+	//immediately send response
+	let msg = await message.channel.send("Organising roles...").catch(err => {
+		console.log(`ERROR: Couldn't send message in #${message.channel.name} - ${err.message}`);
+	});
 
-	if (!has_role) {
-		member.addRole(role);
-
+	//toggle role
+	if (!util.userHasRole(message.author, role)) {
+		let regional = config.regional_roles.find(x => util.getRole(x) === role);
 		if (regional) {
-			config.regional_roles.forEach((r) => { // remove any regional role user may have
-				if (r == role_name) return;
-
-				var _role = member.guild.roles.find(x => x.name === r);
-				if (member.roles.has(_role.id)) { 
-					member.removeRole(_role);
+			//remove all other region roles
+			let roles = config.regional_roles.map(x => util.getRole(x)).filter(x => util.userHasRole(message.author, x));
+			util.removeRole(message.author, roles, success => {
+				if (success) {
+					//add the region role
+					util.addRole(message.author, role, success => {
+						if (success) {
+							return util.editMessage(msg, `You now have the **${role.name}** role`, true);
+						} else {
+							return util.editMessage(msg, `There was an issue adding the **${role.name}** role`, true);
+						}
+					});
+				} else {
+					return util.editMessage(msg, "There was an issue removing the other region roles", true);
+				}
+			});
+		} else {
+			//add the role
+			util.addRole(message.author, role, success => {
+				if (success) {
+					return util.editMessage(msg, `You now have the **${role.name}** role`, true);
+				} else {
+					return util.editMessage(msg, `There was an issue adding the **${role.name}** role`, true);
 				}
 			});
 		}
+	} else {
+		//remove the role
+		util.removeRole(message.author, role, success => {
+			if (success) {
+				return util.editMessage(msg, `You no longer have the **${role.name}** role`, true);
+			} else {
+				return util.editMessage(msg, `There was an issue removing the **${role.name}** role`, true);
+			}
+		});
 	}
-	else {
-		member.removeRole(role);
-	}
-}
-
-exports.onCommand = (member, args) => {
-	doRole(member, args.join(" "));
 }

@@ -8,6 +8,8 @@
 	"delete_response_secs": 6,
 
 	"mod_roles": [],
+	"regional_roles": [],
+	"open_roles": [],
 
 	"update_interval_secs": 60,
 
@@ -16,8 +18,5 @@
 		"message": "",
 		"special_channel_name": true,
 		"embed_colour": 3447003
-	},
-
-	"regional_roles": ["EU", "OC", "NA", "SA", "AN", "AF", "AS"],
-	"open_roles": []
+	}
 }

@@ -47,6 +47,62 @@ exports.userHasRole = (user, role) => {
 	return client.guilds.get(config.guild).members.get(user.id).roles.has(role.id);
 }
 
+exports.addRole = (user, role, callback) => {
+	user = this.getUser(user);
+	if (!user) return callback(false);
+
+	if (Array.isArray(role)) {
+		//remove multiple roles
+		let roles = role.map(x => this.getRole(x)).filter(Boolean);
+
+		client.guilds.get(config.guild).members.get(user.id).addRoles(roles).then(() => { //success
+			return callback(true);
+		}, err => { //error
+			console.log(`ERROR: Couldn't add a role to ${user.username} - ${err.message}`);
+			return callback(false);
+		});
+	} else {
+		//remove a single role
+		role = this.getRole(role);
+		if (!role) return callback(false);
+
+		client.guilds.get(config.guild).members.get(user.id).addRole(role).then(() => { //success
+			return callback(true);
+		}, err => { //error
+			console.log(`ERROR: Couldn't add ${role.name} role to ${user.username} - ${err.message}`);
+			return callback(false);
+		});
+	}
+}
+
+exports.removeRole = (user, role, callback) => {
+	user = this.getUser(user);
+	if (!user) return callback(false);
+
+	if (Array.isArray(role)) {
+		//remove multiple roles
+		let roles = role.map(x => this.getRole(x)).filter(Boolean);
+
+		client.guilds.get(config.guild).members.get(user.id).removeRoles(roles).then(() => { //success
+			return callback(true);
+		}, err => { //error
+			console.log(`ERROR: Couldn't remove a role from ${user.username} - ${err.message}`);
+			return callback(false);
+		});
+	} else {
+		//remove a single role
+		role = this.getRole(role);
+		if (!role) return callback(false);
+
+		client.guilds.get(config.guild).members.get(user.id).removeRole(role).then(() => { //success
+			return callback(true);
+		}, err => { //error
+			console.log(`ERROR: Couldn't remove ${role.name} role from ${user.username} - ${err.message}`);
+			return callback(false);
+		});
+	}
+}
+
 exports.plural = (val, text, suffix = "s") => {
 	return val === 1 ? text : text + suffix;
 }

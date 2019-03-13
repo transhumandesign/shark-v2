@@ -7,6 +7,7 @@ util.init(client);
 
 const serverlist = require("./modules/serverlist.js");
 const roles = require("./modules/roles.js");
+const find = require("./modules/find.js");
 
 client.on("error", console.error);
 
@@ -82,78 +83,34 @@ client.on("message", async message => {
 		return message.channel.fetchMessages({ limit: +args[0] + 1 }).then(messages => message.channel.bulkDelete(messages));
 	}
 
-	if (command === "find") {
-		if (config.delete_commands) {
-			util.deleteMessage(message);
-		}
-
-		//ensure username is specified
-		let username = args[0];
-		if (!username) {
-			return util.sendMessage(message.channel, `Invalid command usage: \`!${command} [username]\``, true);
-		}
-
-		//immediately send response
-		let msg = await message.channel.send("Finding player...").catch(err => {
-			console.log(`ERROR: Couldn't send message in #${message.channel.name} - ${err.message}`);
-		});
-
-		//get player info
-		util.XMLHttpRequest(info => {
-			//player doesnt exist
-			if (!info) {
-				return util.editMessage(msg, `**${username}** doesn't exist`, true);
-			}
-
-			//get proper capitalisation
-			username = info.playerInfo.username;
-
-			//player doesnt own kag
-			if (!info.playerInfo.gold) {
-				return util.editMessage(msg, `**${username}** doesn't own KAG`, true);
-			}
-
-			//get servers
-			util.XMLHttpRequest(servers => {
-				for (let server of servers.serverList) {
-					//player on a server
-					if (server.playerList.some(player => player === username)) {
-						let text = `**${username}** is on **${server.name}** (${server.currentPlayers}/${server.maxPlayers})`;
-						if (!server.password) {
-							text += `\n<kag://${server.IPv4Address}:${server.port}>`;
-						}
-
-						return util.editMessage(msg, text, true);
-					}
-				}
-
-				//player not on server
-				return util.editMessage(msg, `**${username}** isn't on a server`, true);
-
-			}, 'https://api.kag2d.com/v1/game/thd/kag/servers?filters=[{"field":"current","op":"eq","value":"true"},{"field":"connectable","op":"eq","value":true},{"field":"currentPlayers","op":"gt","value":"0"}]');
-		}, `https://api.kag2d.com/v1/player/${username}`);
-	}
-
 	if (["help", "commands"].includes(command)) {
-		//["command_name", "description"]
+		let available_roles = [...config.regional_roles, ...config.open_roles].filter(x => util.getRole(x));
 		let commands = [
 			["ping",										"Used to check if the bot is alive"],
 			["creator",										`${client.user.username} was created by epsilon and Mazey`],
 			["prune/purge [amount]",						"Admin command for bulk-deleting messages"],
 			["find [username]",								"Attempts to find the server the specified player is playing on"],
-			[`region [${config.region_roles.join("/")}]`,	"Gives yourself the role for the specified region"]
+			[`role [${available_roles.join("/")}]`,				"Gives yourself the role specified"]
 		].map(x => `\`${config.prefix + x[0]}\` - ${x[1]}`);
 
 		//direct message user
 		return message.author.send("**Commands:**\n" + commands.join("\n"));
 	}
 
+	if (command === "find") {
+		if (config.delete_commands) {
+			util.deleteMessage(message);
+		}
+
+		return find.onCommand(message, args);
+	}
+
 	if (command === "role") {
 		if (config.delete_commands) {
 			util.deleteMessage(message);
 		}
-		
-		roles.onCommand(message.member, args);
+
+		return roles.onCommand(message, args);
 	}
 });
 
