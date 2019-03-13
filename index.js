@@ -90,7 +90,7 @@ client.on("message", async message => {
 			["creator",										`${client.user.username} was created by epsilon and Mazey`],
 			["prune/purge [amount]",						"Admin command for bulk-deleting messages"],
 			["find [username]",								"Attempts to find the server the specified player is playing on"],
-			[`role [${available_roles.join("/")}]`,				"Gives yourself the role specified"]
+			[`role [${available_roles.join("/")}]`,			"Gives yourself the role specified"]
 		].map(x => `\`${config.prefix + x[0]}\` - ${x[1]}`);
 
 		//direct message user
