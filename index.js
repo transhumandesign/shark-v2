@@ -65,7 +65,7 @@ client.on("message", async message => {
 
 		//mod-only command
 		if (!util.isMod(message.author)) {
-			return util.sendMessage(message.channel, `You aren't able to ${command} messages, ${message.author.toString()}`, true);
+			return util.sendMessage(message.channel, `You aren't able to ${command} messages`, true);
 		}
 
 		//ensure a numerical amount is specified
@@ -88,13 +88,13 @@ client.on("message", async message => {
 			util.deleteMessage(message);
 		}
 
-		let available_roles = [...config.regional_roles, ...config.open_roles].filter(x => util.getRole(x));
+		let available_roles = [...config.regional_roles, ...config.open_roles].map(x => util.getRole(x)).filter(Boolean);
 		let commands = [
-			["ping",										"Used to check if the bot is alive"],
-			["creator",										`${client.user.username} was created by epsilon and Mazey`],
-			["prune/purge [amount]",						"Admin command for bulk-deleting messages"],
-			["find [username]",								"Attempts to find the server the specified player is playing on"],
-			[`role [${available_roles.join("/")}]`,			"Gives yourself the role specified"]
+			["ping",													"Used to check if the bot is alive"],
+			["creator",													`${client.user.username} was created by epsilon and Mazey`],
+			["prune/purge [amount]",									"Admin command for bulk-deleting messages"],
+			["find [username]",											"Attempts to find the server the specified player is playing on"],
+			[`role [${available_roles.map(x => x.name).join("/")}]`,	"Gives yourself the role specified"]
 		].map(x => `\`${config.prefix + x[0]}\` - ${x[1]}`);
 
 		//direct message user

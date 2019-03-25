@@ -2,23 +2,25 @@ const config = require("../config.json");
 const util = require("./util.js");
 
 exports.onCommand = async (message, args) => {
-	let available_roles = [...config.regional_roles, ...config.open_roles].filter(x => util.getRole(x));
+	let regional_roles = config.regional_roles.map(x => util.getRole(x)).filter(Boolean);
+	let open_roles = config.open_roles.map(x => util.getRole(x)).filter(Boolean);
+	let available_roles = [...regional_roles, ...open_roles];
 
 	//ensure role is specified
 	if (!args[0]) {
-		return util.sendMessage(message.channel, `Invalid command usage: \`!role [${available_roles.join("/")}]\``, true);
+		return util.sendMessage(message.channel, `Invalid command usage: \`!role [${available_roles.map(x => x.name).join("/")}]\``, true);
 	}
 
 	//ensure role exists
 	let role = util.getRole(args[0]);
 	if (!role) {
-		return util.sendMessage(message.channel, `A role with the name **${args[0]}** doesn't exist\nAvailable roles: ${available_roles.join(", ")}`, true);
+		return util.sendMessage(message.channel, `A role with the name **${args[0]}** doesn't exist\nAvailable roles: ${available_roles.map(x => x.name).join(", ")}`, true);
 	}
 
 	//ensure role is one that can be self-given
-	let can_add_role = available_roles.some(x => util.getRole(x) === role);
+	let can_add_role = available_roles.includes(role);
 	if (!can_add_role) {
-		return util.sendMessage(message.channel, `You are unable to add the **${role.name}** role to yourself\nAvailable roles: ${available_roles.join(", ")}`, true);
+		return util.sendMessage(message.channel, `You are unable to add the **${role.name}** role to yourself\nAvailable roles: ${available_roles.map(x => x.name).join(", ")}`, true);
 	}
 
 	//immediately send response
@@ -28,10 +30,10 @@ exports.onCommand = async (message, args) => {
 
 	//toggle role
 	if (!util.userHasRole(message.author, role)) {
-		let regional = config.regional_roles.find(x => util.getRole(x) === role);
+		let regional = regional_roles.includes(role);
 		if (regional) {
 			//remove all other region roles
-			let roles = config.regional_roles.map(x => util.getRole(x)).filter(x => util.userHasRole(message.author, x));
+			let roles = regional_roles.filter(x => util.userHasRole(message.author, x));
 			util.removeRole(message.author, roles, success => {
 				if (success) {
 					//add the region role
