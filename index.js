@@ -84,6 +84,10 @@ client.on("message", async message => {
 	}
 
 	if (["help", "commands"].includes(command)) {
+		if (config.delete_commands) {
+			util.deleteMessage(message);
+		}
+
 		let available_roles = [...config.regional_roles, ...config.open_roles].filter(x => util.getRole(x));
 		let commands = [
 			["ping",										"Used to check if the bot is alive"],

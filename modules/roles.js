@@ -6,7 +6,7 @@ exports.onCommand = async (message, args) => {
 
 	//ensure role is specified
 	if (!args[0]) {
-		return util.sendMessage(message.channel, `Invalid command usage: \`!${command} [${available_roles.join("/")}]\``, true);
+		return util.sendMessage(message.channel, `Invalid command usage: \`!role [${available_roles.join("/")}]\``, true);
 	}
 
 	//ensure role exists
