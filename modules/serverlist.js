@@ -89,7 +89,7 @@ function createEmbed(servers) {
 	//special channel name
 	if (config.server_list.special_channel_name) {
 		server_list.channel.setName(`${total_servers}-servers_${total_players}-players`).catch(err => {
-			console.log(`ERROR: Couldn't change name of #${message.channel.name} - ${err.message}`);
+			console.log(`ERROR: Couldn't change name of #${server_list.channel.name} - ${err.message}`);
 		});
 	}
 

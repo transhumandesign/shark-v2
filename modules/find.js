@@ -50,5 +50,5 @@ exports.onCommand = async (message, args) => {
 			return util.editMessage(msg, `**${username}** isn't on a server`, true);
 
 		}, 'https://api.kag2d.com/v1/game/thd/kag/servers?filters=[{"field":"current","op":"eq","value":"true"},{"field":"connectable","op":"eq","value":true},{"field":"currentPlayers","op":"gt","value":"0"}]');
-	}, `https://api.kag2d.com/v1/player/${username}`);
+	}, `https://api.kag2d.com/v1/player/${username}/info`);
 }
