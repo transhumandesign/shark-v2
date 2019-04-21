@@ -133,6 +133,17 @@ client.on("message", async message => {
 
 		return roles.onCommand(message, args);
 	}
+
+	let role = config.mod_mentionable_roles.map(x => util.getRole(x)).filter(Boolean).find(x => x.name.toLowerCase() === command);
+	if (role && util.isMod(message.author)) {
+		util.deleteMessage(message);
+
+		await role.setMentionable(true);
+		await message.channel.send(role.toString()).catch(err => {
+			console.log(`ERROR: Couldn't send message in #${channel.name} - ${err.message}`);
+		});
+		role.setMentionable(false);
+	}
 });
 
 client.on('guildMemberAdd', (member) => {
@@ -142,10 +153,6 @@ client.on('guildMemberAdd', (member) => {
 });
 
 client.on("presenceUpdate", (oldMember, newMember) => {
-	ingame.update(servers);
-});
-
-client.on("guildMemberUpdate", (oldMember, newMember) => {
 	ingame.update(servers);
 });
 

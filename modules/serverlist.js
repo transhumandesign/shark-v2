@@ -3,7 +3,6 @@ const config = require("../config.json");
 const util = require("./util.js");
 
 var server_list;
-var client;
 
 exports.init = () => {
 	util.fetchMessage(message => {

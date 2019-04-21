@@ -14,6 +14,7 @@
 	"mod_roles": [],
 	"regional_roles": [],
 	"open_roles": [],
+	"mod_mentionable_roles": [],
 
 	"update_interval_secs": 60,
 
