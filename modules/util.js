@@ -49,56 +49,68 @@ exports.userHasRole = (user, role) => {
 
 exports.addRole = (user, role, callback) => {
 	user = this.getUser(user);
-	if (!user) return callback(false);
+	if (!user) {
+		if (callback) callback(false);
+		return;
+	}
 
 	if (Array.isArray(role)) {
 		//remove multiple roles
 		let roles = role.map(x => this.getRole(x)).filter(Boolean);
 
 		client.guilds.get(config.guild).members.get(user.id).addRoles(roles).then(() => { //success
-			return callback(true);
+			if (callback) callback(true);
 		}, err => { //error
 			console.log(`ERROR: Couldn't add a role to ${user.username} - ${err.message}`);
-			return callback(false);
+			if (callback) callback(false);
 		});
 	} else {
 		//remove a single role
 		role = this.getRole(role);
-		if (!role) return callback(false);
+		if (!role) {
+			if (callback) callback(false);
+			return;
+		}
 
 		client.guilds.get(config.guild).members.get(user.id).addRole(role).then(() => { //success
-			return callback(true);
+			if (callback) callback(true);
 		}, err => { //error
 			console.log(`ERROR: Couldn't add ${role.name} role to ${user.username} - ${err.message}`);
-			return callback(false);
+			if (callback) callback(false);
 		});
 	}
 }
 
 exports.removeRole = (user, role, callback) => {
 	user = this.getUser(user);
-	if (!user) return callback(false);
+	if (!user) {
+		if (callback) callback(false);
+		return;
+	}
 
 	if (Array.isArray(role)) {
 		//remove multiple roles
 		let roles = role.map(x => this.getRole(x)).filter(Boolean);
 
 		client.guilds.get(config.guild).members.get(user.id).removeRoles(roles).then(() => { //success
-			return callback(true);
+			if (callback) callback(true);
 		}, err => { //error
 			console.log(`ERROR: Couldn't remove a role from ${user.username} - ${err.message}`);
-			return callback(false);
+			if (callback) callback(false);
 		});
 	} else {
 		//remove a single role
 		role = this.getRole(role);
-		if (!role) return callback(false);
+		if (!role) {
+			if (callback) callback(false);
+			return;
+		}
 
 		client.guilds.get(config.guild).members.get(user.id).removeRole(role).then(() => { //success
-			return callback(true);
+			if (callback) callback(true);
 		}, err => { //error
 			console.log(`ERROR: Couldn't remove ${role.name} role from ${user.username} - ${err.message}`);
-			return callback(false);
+			if (callback) callback(false);
 		});
 	}
 }
@@ -163,10 +175,11 @@ exports.fetchMessage = (callback, cfg_group) => {
 	channel = this.getChannel(cfg_group.channel);
 	if (!channel) {
 		console.log("ERROR: Couldn't get channel to fetch message");
-		return callback(null);
+		if (callback) callback(null)
+		return;
 	}
 	channel.fetchMessage(cfg_group.message).then(message => {
-		return callback(message);
+		if (callback) callback(message);
 	}).catch(err => {
 		console.log(`ERROR: Couldn't fetch message from #${channel.name} - ${err.message}`);
 	});
