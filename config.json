@@ -4,6 +4,10 @@
 	"guild": "",
 
 	"commands_channel": "",
+	"welcome_channel": "",
+	"rules_channel": "",
+	"information_channel": "",
+
 	"delete_commands": false,
 	"delete_response_secs": 6,
 
@@ -18,5 +22,10 @@
 		"message": "",
 		"special_channel_name": true,
 		"embed_colour": 3447003
+	},
+
+	"ingame": {
+		"role": "",
+		"check_name": false
 	}
 }

@@ -6,8 +6,11 @@ const util = require("./modules/util.js");
 util.init(client);
 
 const serverlist = require("./modules/serverlist.js");
+const ingame = require("./modules/ingame.js");
 const roles = require("./modules/roles.js");
 const find = require("./modules/find.js");
+
+var servers;
 
 client.on("error", console.error);
 
@@ -15,7 +18,8 @@ client.on("ready", () => {
 	console.log(`Logged in as ${client.user.username} on ${client.guilds.size} ${util.plural(client.guilds.size, "guild")}`);
 
 	getServers();
-	serverlist.init(client);
+	serverlist.init();
+	ingame.init(client);
 });
 
 client.on("message", async message => {
@@ -88,17 +92,30 @@ client.on("message", async message => {
 			util.deleteMessage(message);
 		}
 
+		//commands
 		let available_roles = [...config.regional_roles, ...config.open_roles].map(x => util.getRole(x)).filter(Boolean);
 		let commands = [
-			["ping",													"Used to check if the bot is alive"],
-			["creator",													`${client.user.username} was created by epsilon and Mazey`],
-			["prune/purge [amount]",									"Admin command for bulk-deleting messages"],
-			["find [username]",											"Attempts to find the server the specified player is playing on"],
-			[`role [${available_roles.map(x => x.name).join("/")}]`,	"Gives yourself the role specified"]
-		].map(x => `\`${config.prefix + x[0]}\` - ${x[1]}`);
+			["ping",													"Used to check if the bot is alive."],
+			["creator",													`${client.user.username} was created by epsilon and Mazey.`],
+			["prune/purge [amount]",									"Admin command for bulk-deleting messages."],
+			["find [username]",											"Attempts to find the server the specified player is playing on."],
+			[`role [${available_roles.map(x => x.name).join("/")}]`,	"Gives yourself the role specified."]
+		].map(x => `\`${config.prefix + x[0]}\` - ${x[1]}`).join("\n");
+
+		//features (only display enabled features)
+		let features = [];
+		let servers_channel = util.getChannel(config.server_list.channel);
+		if (servers_channel) {
+			features.push(["KAG Server List", `A list of KAG servers updated every minute. The channel name displays the number of active servers and players. The server list can be found in the ${servers_channel.toString()} channel.`]);
+		}
+		let ingame_role = util.getRole(config.ingame.role);
+		if (ingame_role) {
+			features.push([`@${ingame_role.name} role`, `Displays players who are playing KAG on the member list. Relies on Discord presence${config.ingame.check_name ? " or your nickname/username being your KAG username" : ""}.`]);
+		}
+		features = features.map(x => `\`${x[0]}\` - ${x[1]}`).join("\n");
 
 		//direct message user
-		return message.author.send("**Commands:**\n" + commands.join("\n"));
+		return message.author.send(`**Commands:**\n${commands}\n\n**Features:**\n${features}`);
 	}
 
 	if (command === "find") {
@@ -118,11 +135,26 @@ client.on("message", async message => {
 	}
 });
 
+client.on('guildMemberAdd', (member) => {
+	if (config.welcome_channel) {
+		util.sendMessage(config.welcome_channel, `Welcome ${member.toString()}! Please read the <#${config.rules_channel}> and check out <#${config.information_channel}>.`);
+	}
+});
+
+client.on("presenceUpdate", (oldMember, newMember) => {
+	ingame.update(servers);
+});
+
+client.on("guildMemberUpdate", (oldMember, newMember) => {
+	ingame.update(servers);
+});
+
 function getServers() {
-	util.XMLHttpRequest(servers => {
-		servers = util.sortServers(servers);
+	util.XMLHttpRequest(data => {
+		servers = util.sortServers(data);
 		util.updatePresence(servers);
 		serverlist.update(servers);
+		ingame.update(servers);
 	}, 'https://api.kag2d.com/v1/game/thd/kag/servers?filters=[{"field":"current","op":"eq","value":"true"},{"field":"connectable","op":"eq","value":true},{"field":"currentPlayers","op":"gt","value":"0"}]');
 
 	//loop every minute

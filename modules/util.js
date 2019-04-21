@@ -145,13 +145,15 @@ exports.sendMessage = (channel, text, delete_message = false) => {
 	});
 }
 
-exports.editMessage = (message, text, delete_message = false) => {
+exports.editMessage = (message, text, delete_message = false, callback) => {
 	if (!message) return;
 	message.edit(text).then(message => {
+		if (callback) callback();
 		if (delete_message) {
 			this.deleteMessage(message, config.delete_response_secs * 1000);
 		}
 	}).catch(err => {
+		if (callback) return callback(err);
 		console.log(`ERROR: Couldn't edit message in #${message.channel.name} - ${err.message}`);
 	});
 }

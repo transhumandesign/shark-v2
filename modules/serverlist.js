@@ -5,9 +5,7 @@ const util = require("./util.js");
 var server_list;
 var client;
 
-exports.init = (cl) => {
-	client = cl;
-	util.init(cl);
+exports.init = () => {
 	util.fetchMessage(message => {
 		if (!message) return;
 
