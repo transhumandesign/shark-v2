@@ -4,7 +4,7 @@ const util = require("./util.js");
 
 var server_list;
 
-exports.init = () => {
+exports.init = (cl) => {
 	util.fetchMessage(message => {
 		if (!message) return;
 
@@ -24,7 +24,7 @@ exports.update = (servers) => {
 				count++;
 
 				if (data) {
-					server.region = data.country;
+					server.country = data.country;
 				}
 
 				//add servers to embed once we have all flags
@@ -43,10 +43,18 @@ function createEmbed(servers, trimAmount = 0) {
 	let total_servers = servers ? servers.length : 0;
 	let total_players = servers ? servers.reduce((t, x) => t + x.currentPlayers, 0) : 0;
 
+	servers = servers.slice(0, 25);
+
+	let hidden_servers = (total_servers - servers.length) + trimAmount;
+
+	let description = `${total_servers} ${util.plural(total_servers, "server")} with ${total_players} ${util.plural(total_players, "player")}`;
+	// description += hidden_servers ? `\n${hidden_servers} ${util.plural(hidden_servers, "server")} not visible` : "";
+	description += hidden_servers ? `\nShowing ${total_servers - hidden_servers}/${total_servers} servers` : "";
+
 	const embed = new Discord.RichEmbed()
 		.setTitle(":crossed_swords: KAG Server List :bow_and_arrow:")
 		.setColor(config.server_list.embed_colour)
-		.setDescription(`${total_servers} ${util.plural(total_servers, "server")} with ${total_players} ${util.plural(total_players, "player")}\n​`)
+		.setDescription(description + "\n​")
 		.setFooter("Last updated")
 		.setTimestamp();
 
@@ -55,6 +63,7 @@ function createEmbed(servers, trimAmount = 0) {
 			let server = servers[i];
 
 			let description = server.usingMods ? server.description.replace(/(\n\n|\n$)[^\n]*$/, "") : server.description;
+			let full = server.currentPlayers >= server.maxPlayers ? " [FULL]" : "";
 			let spectators = server.spectatorPlayers ? ` (${server.spectatorPlayers} ${util.plural(server.spectatorPlayers, "spectator")})` : "";
 			let modded = server.usingMods ? " (modded)" : "";
 
@@ -63,10 +72,9 @@ function createEmbed(servers, trimAmount = 0) {
 				`**Description:** ${description.length ? description.replace(/_/g, "\\_") : "*no description*"}`,
 				`**Address:** ${server.password ? "*locked server*" : `<kag://${server.IPv4Address}:${server.port}>`}`,
 				`**Gamemode:** ${server.gameMode.replace(/_/g, "\\_")}${modded}`,
-				`**Players:** ${server.currentPlayers}/${server.maxPlayers}${spectators}`,
-				server.playerList.join(" ").replace(/_/g, "\\_"),
-				"​" //zero-width character for spacing
-			].sort(Boolean).join("\n");
+				`**Players:** ${server.currentPlayers}/${server.maxPlayers}${full}${spectators}`,
+				server.playerList.join(" ").replace(/_/g, "\\_")
+			].sort(Boolean).reverse().join("\n");
 
 			//truncate text if too long
 			let ellipsis = "…";
@@ -78,9 +86,9 @@ function createEmbed(servers, trimAmount = 0) {
 				text = text.substr(0, Math.min(text.length, text.lastIndexOf(" ") + 1)) + ellipsis;
 			}
 
-			let flag = server.region ? `:flag_${server.region.toLowerCase()}:` : "";
+			let flag = server.country ? `:flag_${server.country.toLowerCase()}:` : "";
 
-			embed.addField(`${flag} ${server.name}`, text);
+			embed.addField(`${flag} ${server.name}`, text + "\n​");
 		}
 	} else {
 		embed.addField(":small_red_triangle:​ Unable to retrieve servers :small_red_triangle:", "​");

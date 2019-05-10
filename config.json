@@ -28,5 +28,13 @@
 	"ingame": {
 		"role": "",
 		"check_name": false
+	},
+
+	"advertise": {
+		"channel_queue": "",
+		"channel_publish": "",
+		"delete_resolved_invites": false,
+		"accept_emoji": "👍",
+		"reject_emoji": "👎"
 	}
 }

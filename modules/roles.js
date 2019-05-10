@@ -1,14 +1,28 @@
 const config = require("../config.json");
 const util = require("./util.js");
 
-exports.onCommand = async (message, args) => {
+exports.onCommand = async (message, command, args) => {
+	//guild-only command
+	if (!message.guild) return;
+
+	//get available roles
 	let regional_roles = config.regional_roles.map(x => util.getRole(x)).filter(Boolean);
 	let open_roles = config.open_roles.map(x => util.getRole(x)).filter(Boolean);
 	let available_roles = [...regional_roles, ...open_roles];
 
+	//ensure roles are available
+	if (!available_roles.length) {
+		return;
+	}
+
+	//delete command
+	if (config.delete_commands) {
+		util.deleteMessage(message);
+	}
+
 	//ensure role is specified
 	if (!args[0]) {
-		return util.sendMessage(message.channel, `Invalid command usage: \`!role [${available_roles.map(x => x.name).join("/")}]\``, true);
+		return util.sendMessage(message.channel, `Invalid command usage: \`!${command} [${available_roles.map(x => x.name).join("/")}]\``, true);
 	}
 
 	//ensure role exists
@@ -27,6 +41,7 @@ exports.onCommand = async (message, args) => {
 	let msg = await message.channel.send("Organising roles...").catch(err => {
 		console.log(`ERROR: Couldn't send message in #${message.channel.name} - ${err.message}`);
 	});
+	if (!msg) return;
 
 	//toggle role
 	if (!util.userHasRole(message.author, role)) {

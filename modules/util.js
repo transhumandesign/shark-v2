@@ -115,8 +115,13 @@ exports.removeRole = (user, role, callback) => {
 	}
 }
 
-exports.plural = (val, text, suffix = "s") => {
-	return val === 1 ? text : text + suffix;
+exports.plural = (val, text, suffix = "s", trim = 0) => {
+	if (val === 1) {
+		return text;
+	} else {
+		if (trim) text = text.slice(0, -trim);
+		return text + suffix;
+	}
 }
 
 exports.XMLHttpRequest = (callback, url) => {
@@ -159,7 +164,7 @@ exports.editMessage = (message, text, delete_message = false, callback) => {
 }
 
 exports.deleteMessage = (message, delete_message = 0) => {
-	if (!message) return;
+	if (!message || !message.guild) return;
 	if (delete_message) {
 		setTimeout(() => {
 			message.delete().catch(err => {
@@ -206,8 +211,6 @@ exports.sortServers = (servers) => {
 		return b.currentPlayers - a.currentPlayers;
 	});
 
-	servers = servers.slice(0, 25);
-
 	for (let server of servers) {
 		server.playerList.sort((a, b) => {
 			return a.toLowerCase().localeCompare(b.toLowerCase());
@@ -225,5 +228,6 @@ exports.isMod = (user) => {
 
 exports.updatePresence = (servers) => {
 		let total_players = servers ? servers.reduce((t, x) => t + x.currentPlayers, 0) : 0;
-		client.user.setActivity(`${total_players} in KAG | ${config.prefix}help`, { type: 'WATCHING' });
+		let text = `with ${total_players} ${this.plural(total_players, "fishy", "ies", 1)} | ${config.prefix}help`;
+		client.user.setActivity(text, { type: 'PLAYING' });
 }

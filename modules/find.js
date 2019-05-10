@@ -1,17 +1,27 @@
 const config = require("../config.json");
 const util = require("./util.js");
 
-exports.onCommand = async (message, args) => {
+exports.onCommand = async (message, command, args) => {
+	//delete command
+	if (config.delete_commands) {
+		util.deleteMessage(message);
+	}
+
 	//ensure username is specified
 	let username = args[0];
 	if (!username) {
-		return util.sendMessage(message.channel, `Invalid command usage: \`!${command} [username]\``, true);
+		return util.sendMessage(message.channel, `Invalid command usage: \`!${command} [KAG username]\``, true);
+	}
+
+	if (username.match(/[^\w_-]/)) {
+		return util.sendMessage(message.channel, "Please provide a KAG username", true);
 	}
 
 	//immediately send response
 	let msg = await message.channel.send("Finding player...").catch(err => {
 		console.log(`ERROR: Couldn't send message in #${message.channel.name} - ${err.message}`);
 	});
+	if (!msg) return;
 
 	//get player info
 	util.XMLHttpRequest(info => {
