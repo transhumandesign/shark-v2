@@ -39,26 +39,28 @@ exports.update = (servers) => {
 }
 
 function createEmbed(servers, trimAmount = 0) {
-	//embed description
 	let total_servers = servers ? servers.length : 0;
 	let total_players = servers ? servers.reduce((t, x) => t + x.currentPlayers, 0) : 0;
-
-	servers = servers.slice(0, 25);
-
-	let hidden_servers = (total_servers - servers.length) + trimAmount;
-
-	let description = `${total_servers} ${util.plural(total_servers, "server")} with ${total_players} ${util.plural(total_players, "player")}`;
-	// description += hidden_servers ? `\n${hidden_servers} ${util.plural(hidden_servers, "server")} not visible` : "";
-	description += hidden_servers ? `\nShowing ${total_servers - hidden_servers}/${total_servers} servers` : "";
 
 	const embed = new Discord.RichEmbed()
 		.setTitle(":crossed_swords: KAG Server List :bow_and_arrow:")
 		.setColor(config.server_list.embed_colour)
-		.setDescription(description + "\n​")
+		.setDescription("\n​")
 		.setFooter("Last updated")
 		.setTimestamp();
 
 	if (servers) {
+		//remove servers if too many for embed
+		servers = servers.slice(0, 25);
+		let hidden_servers = (total_servers - servers.length) + trimAmount;
+
+		//embed description
+		let description = `${total_servers} ${util.plural(total_servers, "server")} with ${total_players} ${util.plural(total_players, "player")}`;
+		// description += hidden_servers ? `\n${hidden_servers} ${util.plural(hidden_servers, "server")} not visible` : "";
+		description += hidden_servers ? `\nShowing ${total_servers - hidden_servers}/${total_servers} servers` : "";
+
+		embed.setDescription(description + "\n​");
+
 		for (let i = 0; i < servers.length - trimAmount; i++) {
 			let server = servers[i];
 
@@ -69,7 +71,7 @@ function createEmbed(servers, trimAmount = 0) {
 
 			//escape underscores so they dont italicise the text
 			let text = [
-				`**Description:** ${description.length ? description.replace(/_/g, "\\_") : "*no description*"}`,
+				// `**Description:** ${description.length ? description.replace(/_/g, "\\_") : "*no description*"}`,
 				`**Address:** ${server.password ? "*locked server*" : `<kag://${server.IPv4Address}:${server.port}>`}`,
 				`**Gamemode:** ${server.gameMode.replace(/_/g, "\\_")}${modded}`,
 				`**Players:** ${server.currentPlayers}/${server.maxPlayers}${full}${spectators}`,
