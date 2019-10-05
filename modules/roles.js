@@ -21,14 +21,14 @@ exports.onCommand = async (message, command, args) => {
 	}
 
 	//ensure role is specified
-	if (!args[0]) {
+	if (args.length == 0) {
 		return util.sendMessage(message.channel, `Invalid command usage: \`!${command} [${available_roles.map(x => x.name).join("/")}]\``, true);
 	}
 
 	//ensure role exists
-	let role = util.getRole(args[0]);
+	let role = util.getRole(args.join(' '));
 	if (!role) {
-		return util.sendMessage(message.channel, `A role with the name **${args[0]}** doesn't exist\nAvailable roles: ${available_roles.map(x => x.name).join(", ")}`, true);
+		return util.sendMessage(message.channel, `A role with the name **${args.join(' ')}** doesn't exist\nAvailable roles: ${available_roles.map(x => x.name).join(", ")}`, true);
 	}
 
 	//ensure role is one that can be self-given
