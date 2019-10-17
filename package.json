@@ -1,12 +1,24 @@
 {
   "name": "shark-v2",
-  "author": "epsilon & Mazey",
-  "version": "1.0",
+  "version": "1.0.0",
   "description": "A better King Arthur's Gold Discord bot",
-  "homepage": "https://github.com/transhumandesign/shark-v2",
   "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/transhumandesign/shark-v2.git"
+  },
+  "author": "epsilon & Mazey",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/transhumandesign/shark-v2/issues"
+  },
+  "homepage": "https://discord.gg/kag",
   "dependencies": {
-    "discord.js": "^11.4.2",
+    "discord.js": "^11.5.1",
     "xmlhttprequest": "^1.8.0"
   }
 }
