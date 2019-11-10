@@ -20,7 +20,7 @@ exports.onCommand = async (message, command, args) => {
 	//ensure role exists
 	let role = util.getRole(args.join(" "));
 	if (!role) {
-		return util.sendMessage(message.channel, `The **${args.join(" ")}** role couldn't be found`, true);
+		return util.sendMessage(message.channel, `The **${util.sanitize(args.join(" "))}** role couldn't be found`, true);
 	}
 
 	let mentionable = role.mentionable;

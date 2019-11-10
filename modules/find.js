@@ -47,7 +47,7 @@ exports.onCommand = async (message, command, args) => {
 			for (let server of servers.serverList) {
 				//player on a server
 				if (server.playerList.some(player => player === username)) {
-					let text = `**${username}** is on **${server.name}** (${server.currentPlayers}/${server.maxPlayers})`;
+					let text = `**${username}** is on **${util.sanitize(server.name)}** (${server.currentPlayers}/${server.maxPlayers})`;
 					if (!server.password) {
 						text += `\n<kag://${server.IPv4Address}:${server.port}>`;
 					}

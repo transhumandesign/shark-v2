@@ -231,3 +231,9 @@ exports.updatePresence = (servers) => {
 		let text = `with ${total_players} ${this.plural(total_players, "fishy", "ies", 1)} | ${config.prefix}help`;
 		client.user.setActivity(text, { type: 'PLAYING' });
 }
+
+exports.sanitize = (data) => {
+	//add zero width whitespace after the character to prevent the bot mentioning the channel/role/user
+	//escape any discord markdown characters (\ * _ ` ~ >)
+	return data.replace(/([@#])/g, "$1​").replace(/([\\\*_`~>])/g, "\\$1");
+}

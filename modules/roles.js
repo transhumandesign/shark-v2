@@ -9,6 +9,7 @@ exports.onCommand = async (message, command, args) => {
 	let regional_roles = config.regional_roles.map(x => util.getRole(x)).filter(Boolean);
 	let open_roles = config.open_roles.map(x => util.getRole(x)).filter(Boolean);
 	let available_roles = [...regional_roles, ...open_roles];
+	let available_role_names = available_roles.map(x => util.sanitize(x.name));
 
 	//ensure roles are available
 	if (!available_roles.length) {
@@ -21,20 +22,20 @@ exports.onCommand = async (message, command, args) => {
 	}
 
 	//ensure role is specified
-	if (args.length == 0) {
-		return util.sendMessage(message.channel, `Invalid command usage: \`!${command} [${available_roles.map(x => x.name).join("/")}]\``, true);
+	if (!args[0]) {
+		return util.sendMessage(message.channel, `Invalid command usage: \`!${command} [${available_role_names.join("/")}]\``, true);
 	}
 
 	//ensure role exists
-	let role = util.getRole(args.join(' '));
+	let role = util.getRole(args[0]);
 	if (!role) {
-		return util.sendMessage(message.channel, `A role with the name **${args.join(' ')}** doesn't exist\nAvailable roles: ${available_roles.map(x => x.name).join(", ")}`, true);
+		return util.sendMessage(message.channel, `A role with the name **${util.sanitize(args[0])}** doesn't exist\nAvailable roles: ${available_role_names.join(", ")}`, true);
 	}
 
 	//ensure role is one that can be self-given
 	let can_add_role = available_roles.includes(role);
 	if (!can_add_role) {
-		return util.sendMessage(message.channel, `You are unable to add the **${role.name}** role to yourself\nAvailable roles: ${available_roles.map(x => x.name).join(", ")}`, true);
+		return util.sendMessage(message.channel, `You are unable to add the **${util.sanitize(role.name)}** role to yourself\nAvailable roles: ${available_role_names.join(", ")}`, true);
 	}
 
 	//immediately send response
@@ -54,9 +55,9 @@ exports.onCommand = async (message, command, args) => {
 					//add the region role
 					util.addRole(message.author, role, success => {
 						if (success) {
-							return util.editMessage(msg, `You now have the **${role.name}** role`, true);
+							return util.editMessage(msg, `You now have the **${util.sanitize(role.name)}** role`, true);
 						} else {
-							return util.editMessage(msg, `There was an issue adding the **${role.name}** role`, true);
+							return util.editMessage(msg, `There was an issue adding the **${util.sanitize(role.name)}** role`, true);
 						}
 					});
 				} else {
@@ -67,9 +68,9 @@ exports.onCommand = async (message, command, args) => {
 			//add the role
 			util.addRole(message.author, role, success => {
 				if (success) {
-					return util.editMessage(msg, `You now have the **${role.name}** role`, true);
+					return util.editMessage(msg, `You now have the **${util.sanitize(role.name)}** role`, true);
 				} else {
-					return util.editMessage(msg, `There was an issue adding the **${role.name}** role`, true);
+					return util.editMessage(msg, `There was an issue adding the **${util.sanitize(role.name)}** role`, true);
 				}
 			});
 		}
@@ -77,9 +78,9 @@ exports.onCommand = async (message, command, args) => {
 		//remove the role
 		util.removeRole(message.author, role, success => {
 			if (success) {
-				return util.editMessage(msg, `You no longer have the **${role.name}** role`, true);
+				return util.editMessage(msg, `You no longer have the **${util.sanitize(role.name)}** role`, true);
 			} else {
-				return util.editMessage(msg, `There was an issue removing the **${role.name}** role`, true);
+				return util.editMessage(msg, `There was an issue removing the **${util.sanitize(role.name)}** role`, true);
 			}
 		});
 	}

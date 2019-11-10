@@ -71,11 +71,11 @@ function createEmbed(servers, trimAmount = 0) {
 
 			//escape underscores so they dont italicise the text
 			let text = [
-				// `**Description:** ${description.length ? description.replace(/_/g, "\\_") : "*no description*"}`,
+				// `**Description:** ${description.length ? util.sanitize(description) : "*no description*"}`,
 				`**Address:** ${server.password ? "*locked server*" : `<kag://${server.IPv4Address}:${server.port}>`}`,
-				`**Gamemode:** ${server.gameMode.replace(/_/g, "\\_")}${modded}`,
+				`**Gamemode:** ${util.sanitize(server.gameMode)}${modded}`,
 				`**Players:** ${server.currentPlayers}/${server.maxPlayers}${full}${spectators}`,
-				server.playerList.join(" ").replace(/_/g, "\\_")
+				util.sanitize(server.playerList.join(" "))
 			].sort(Boolean).reverse().join("\n");
 
 			//truncate text if too long
@@ -90,7 +90,7 @@ function createEmbed(servers, trimAmount = 0) {
 
 			let flag = server.country ? `:flag_${server.country.toLowerCase()}:` : "";
 
-			embed.addField(`${flag} ${server.name}`, text + "\n​");
+			embed.addField(`${flag} ${util.sanitize(server.name)}`, text + "\n​");
 		}
 	} else {
 		embed.addField(":small_red_triangle:​ Unable to retrieve servers :small_red_triangle:", "​");
