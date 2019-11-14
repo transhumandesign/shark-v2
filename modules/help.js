@@ -33,7 +33,7 @@ function getCommands() {
 
 	let available_roles = [...config.regional_roles, ...config.open_roles].map(x => util.getRole(x)).filter(Boolean);
 	if (available_roles.length) {
-		commands.push([`role [${available_roles.map(x => util.sanitize(x.name)).join("/")}]`, "Gives yourself the role specified."]);
+		commands.push([`role [${available_roles.map(x => x.name).join("/")}]`, "Gives yourself the role specified."]);
 	}
 
 	let queue_channel = util.getChannel(config.advertise.channel_queue);
