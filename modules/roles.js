@@ -9,7 +9,8 @@ exports.onCommand = async (message, command, args) => {
 	let regional_roles = config.regional_roles.map(x => util.getRole(x)).filter(Boolean);
 	let open_roles = config.open_roles.map(x => util.getRole(x)).filter(Boolean);
 	let available_roles = [...regional_roles, ...open_roles];
-	let available_role_names = available_roles.map(x => util.sanitize(x.name));
+	let available_role_names = available_roles.map(x => x.name);
+	let available_role_names_sanitized = available_role_names.map(x => util.sanitize(x));
 
 	//ensure roles are available
 	if (!available_roles.length) {
@@ -22,20 +23,20 @@ exports.onCommand = async (message, command, args) => {
 	}
 
 	//ensure role is specified
-	if (!args[0]) {
+	if (args.length == 0) {
 		return util.sendMessage(message.channel, `Invalid command usage: \`!${command} [${available_role_names.join("/")}]\``, true);
 	}
 
 	//ensure role exists
-	let role = util.getRole(args[0]);
+	let role = util.getRole(args.join(" "));
 	if (!role) {
-		return util.sendMessage(message.channel, `A role with the name **${util.sanitize(args[0])}** doesn't exist\nAvailable roles: ${available_role_names.join(", ")}`, true);
+		return util.sendMessage(message.channel, `A role with the name **${util.sanitize(args.join(" "))}** doesn't exist\nAvailable roles: ${available_role_names_sanitized.join(", ")}`, true);
 	}
 
 	//ensure role is one that can be self-given
 	let can_add_role = available_roles.includes(role);
 	if (!can_add_role) {
-		return util.sendMessage(message.channel, `You are unable to add the **${util.sanitize(role.name)}** role to yourself\nAvailable roles: ${available_role_names.join(", ")}`, true);
+		return util.sendMessage(message.channel, `You are unable to add the **${util.sanitize(role.name)}** role to yourself\nAvailable roles: ${available_role_names_sanitized.join(", ")}`, true);
 	}
 
 	//immediately send response
