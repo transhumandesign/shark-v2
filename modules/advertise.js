@@ -24,29 +24,29 @@ exports.onCommand = async (message, command, args) => {
 		util.deleteMessage(message);
 	}
 
-	//ensure invite is specified
-	if (!args[0]) {
+	//ensure all arguments are specified
+	if (args.length < 2) {
 		return util.sendMessage(message.channel, `Invalid command usage: \`!${command} [invite] [description]\``, true);
 	}
 
 	//check if invite is valid
-	let invite = await client.fetchInvite(args[0]).catch(err => {
-		util.sendMessage(message.channel, "Invalid invite", true);
+	let invite = await client.fetchInvite(args.shift()).catch(err => {
+		util.sendMessage(message.channel, "Please provide a valid invite", true);
 	});
 	if (!invite) return;
 
 	//form description
-	let description;
-	if (args.length > 1) {
-		args.shift();
-		description = args.join(" ");
-	}
+	let description = util.sanitize(args.join(" "));
 
 	//send queue message
-	let queueMessage = await queueChannel.send(`Invite: discord.gg/${invite.code}\nMember: ${message.author.toString()}${description ? `\nDescription: ${description}`: ""}`).catch(err => {
+	let queueMessage = await queueChannel.send(`Invite: discord.gg/${invite.code}\nMember: ${message.author.toString()}\nDescription: ${description}`).catch(err => {
 		console.log(`ERROR: Couldn't send message in #${message.channel.name} - ${err.message}`);
 	});
-	if (!queueMessage) return;
+	if (queueMessage) {
+		util.sendMessage(message.channel, "Your advertisement request has been sent and is now waiting for approval", true);
+	} else {
+		return util.sendMessage(message.channel, "Unable to send advertisement request. Please try again later", true);
+	}
 
 	//add emoji to queue message
 	const emoji = [config.advertise.accept_emoji, config.advertise.reject_emoji];
@@ -58,9 +58,11 @@ exports.onCommand = async (message, command, args) => {
 	const filter = (reaction, user) => emoji.includes(reaction.emoji.name) && user.id != client.user.id;
 	const collector = queueMessage.createReactionCollector(filter, { max: 1 });
 	collector.on("collect", reaction => {
-		if (reaction.emoji.name === emoji[0]) {
+		let accepted = reaction.emoji.name === emoji[0];
+
+		if (accepted) {
 			//accept invite
-			util.sendMessage(publishChannel, `Invite: discord.gg/${invite.code}${description ? `\nDescription: ${description}`: ""}`)
+			util.sendMessage(publishChannel, `Invite: discord.gg/${invite.code}\nDescription: ${description}`);
 		}
 
 		//do something to show it is resolved
@@ -68,6 +70,7 @@ exports.onCommand = async (message, command, args) => {
 			util.deleteMessage(queueMessage);
 		} else {
 			queueMessage.clearReactions();
+			util.editMessage(queueMessage, `${queueMessage.content}\nOutcome: ${accepted ? "Accepted" : "Declined"}`);
 		}
 	});
 }
