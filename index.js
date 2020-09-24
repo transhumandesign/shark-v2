@@ -94,11 +94,11 @@ client.on("message", async (message) => {
 	}
 });
 
-/*client.on('guildMemberAdd', (member) => {
+client.on('guildMemberAdd', (member) => {
 	if (config.welcome_channel) {
 		util.sendMessage(config.welcome_channel, `Welcome ${member.toString()}! Please read the <#${config.rules_channel}> and check out <#${config.information_channel}>.`);
 	}
-});*/
+});
 
 client.on("presenceUpdate", (oldMember, newMember) => {
 	ingame.update(servers);
