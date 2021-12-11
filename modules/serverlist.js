@@ -66,7 +66,7 @@ function createEmbed(servers, trimAmount = 0) {
 
 			let description = server.usingMods ? server.description.replace(/(\n\n|\n$)[^\n]*$/, "") : server.description;
 			let full = server.currentPlayers >= server.maxPlayers ? " [FULL]" : "";
-			let spectators = server.spectatorPlayers ? ` (${server.spectatorPlayers} ${util.plural(server.spectatorPlayers, "spectator")})` : "";
+			let spectators = server.spectatorPlayers > 0 ? ` (${server.spectatorPlayers} ${util.plural(server.spectatorPlayers, "spectator")})` : "";
 			let modded = server.usingMods ? " (modded)" : "";
 
 			//escape underscores so they dont italicise the text
