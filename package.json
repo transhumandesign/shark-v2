@@ -20,5 +20,8 @@
   "dependencies": {
     "discord.js": "^14.5.0",
     "xmlhttprequest": "^1.8.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.24.0"
   }
 }
