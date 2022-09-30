@@ -1,44 +1,43 @@
-const Discord = require("discord.js");
-const config = require("../config.json");
-const util = require("./util.js");
+const config = require('../config.json');
+const util = require('./util.js');
 
-var client;
+let client;
 
-exports.init = (cl) => {
+module.exports.init = (cl) => {
 	client = cl;
-}
+};
 
-exports.update = (servers) => {
+module.exports.update = (servers) => {
 	if (!servers || !config.ingame.role || !config.ingame.check_name) return;
 
-	//get role
-	let role = util.getRole(config.ingame.role);
-	if (!role) return console.log(`ERROR: ingame role doesn't exist`);
+	// get role
+	const role = util.getRole(config.ingame.role);
+	if (!role) return console.log('ERROR: ingame role doesn\'t exist');
 
-	//get members
-	let memberArray = client.guilds.get(config.guild).members.array();
-	for (let member of memberArray) {
+	// get members
+	const memberArray = client.guilds.cache.get(config.guild).members.array();
+	for (const member of memberArray) {
 
-		//check if in-game
+		// check if in-game
 		let onServer = false;
-		for (let server of servers) {
+		for (const server of servers) {
 			if (server.playerList.some(player => player.toLowerCase() === (member.nickname || member.user.username).toLowerCase())) {
 				onServer = true;
 				break;
 			}
 		}
 
-		//check presence
+		// check presence
 		let playingKAG = false;
-		if (member.presence.game && member.presence.game.name === "King Arthur's Gold") {
+		if (member.presence.game && member.presence.game.name === 'King Arthur\'s Gold') {
 			playingKAG = true;
 		}
 
-		//update role
+		// update role
 		if ((onServer || playingKAG) && !util.userHasRole(member, config.ingame.role)) {
 			util.addRole(member, role);
 		} else if (!(onServer || playingKAG) && util.userHasRole(member, config.ingame.role)) {
 			util.removeRole(member, role);
 		}
 	}
-}
+};

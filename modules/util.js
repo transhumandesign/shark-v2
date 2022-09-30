@@ -1,53 +1,60 @@
-const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
-const config = require("../config.json");
+const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
+const config = require('../config.json');
+const { ActivityType } = require('discord.js');
 
-var client;
+let client;
 
-exports.init = (cl) => {
+module.exports.init = (cl) => {
 	client = cl;
-}
+};
 
-exports.getRole = (role) => {
+module.exports.getRole = (role) => {
 	if (!role) return null;
-	if (typeof role === "object") return role;
-	if (/<@&\d+>/.test(role) || !isNaN(role)) { //mention or ID
-		role = client.guilds.get(config.guild).roles.get(role.match(/\d+/)[0]);
-	} else { //name
-		role = client.guilds.get(config.guild).roles.find(x => x.name.toLowerCase() === role.toLowerCase());
+	if (typeof role === 'object') return role;
+	if (/<@&\d+>/.test(role) || !isNaN(role)) {
+		// mention or ID
+		role = client.guilds.cache.get(config.guild).roles.cache.get(role.match(/\d+/)[0]);
+	} else {
+		// name
+		role = client.guilds.cache.get(config.guild).roles.cache.find(x => x.name.toLowerCase() === role.toLowerCase());
 	}
 	return role || null;
-}
+};
 
-exports.getUser = (user) => {
+module.exports.getUser = (user) => {
 	if (!user) return null;
-	if (typeof user === "object") return user;
-	if (/<@!?\d+>/.test(user) || !isNaN(user)) { //mention or ID
-		user = client.guilds.get(config.guild).members.get(user.match(/\d+/)[0]);
-	} else if (/.+#\d{4}$/.test(user)) { //tag
-		user = client.guilds.get(config.guild).members.array().find(x => user === `${x.user.username}#${x.user.discriminator}`);
-	} else { //name
-		let guildMembers = client.guilds.get(config.guild).members;
+	if (typeof user === 'object') return user;
+	if (/<@!?\d+>/.test(user) || !isNaN(user)) {
+		// mention or ID
+		user = client.guilds.cache.get(config.guild).members.cache.get(user.match(/\d+/)[0]);
+	} else if (/.+#\d{4}$/.test(user)) {
+		// tag
+		user = client.guilds.cache.get(config.guild).members.cache.array().find(x => user === `${x.user.username}#${x.user.discriminator}`);
+	} else {
+		// name
+		const guildMembers = client.guilds.cache.get(config.guild).members;
 		user = guildMembers.find(x => x.user.username.toLowerCase() === user.toLowerCase())
 			|| guildMembers.find(x => (x.nickname || x.user.username).toLowerCase() === user.toLowerCase())
 			|| guildMembers.find(x => x.user.username.toLowerCase().includes(user.toLowerCase()))
 			|| guildMembers.find(x => (x.nickname || x.user.username).toLowerCase().includes(user.toLowerCase()));
 	}
 	return user || null;
-}
+};
 
-exports.getChannel = (channel) => {
-	if (typeof channel === "object") return channel;
-	return client.guilds.get(config.guild).channels.get(channel) || null;
-}
+module.exports.getChannel = (channel) => {
+	if (typeof channel === 'object') return channel;
+	return client.guilds.cache.get(config.guild).channels.cache.get(channel) || null;
+};
 
-exports.userHasRole = (user, role) => {
+module.exports.userHasRole = (user, role) => {
 	user = this.getUser(user);
 	role = this.getRole(role);
-	if (!user || !role) return false;
-	return client.guilds.get(config.guild).members.get(user.id).roles.has(role.id);
-}
+	const member = client.guilds.cache.get(config.guild).members.cache.get(user.id);
+	if (!user || !role || !member) return false;
+	return member.roles.cache.has(role.id);
+};
 
-exports.addRole = (user, role, callback) => {
+module.exports.addRole = async (user, role, callback) => {
 	user = this.getUser(user);
 	if (!user) {
 		if (callback) callback(false);
@@ -55,33 +62,37 @@ exports.addRole = (user, role, callback) => {
 	}
 
 	if (Array.isArray(role)) {
-		//remove multiple roles
-		let roles = role.map(x => this.getRole(x)).filter(Boolean);
+		// remove multiple roles
+		const roles = role.map(x => this.getRole(x)).filter(Boolean);
 
-		client.guilds.get(config.guild).members.get(user.id).addRoles(roles).then(() => { //success
+		client.guilds.cache.get(config.guild).members.cache.get(user.id).addRoles(roles).then(() => {
+			// success
 			if (callback) callback(true);
-		}, err => { //error
+		}, err => {
+			// error
 			console.log(`ERROR: Couldn't add a role to ${user.username} - ${err.message}`);
 			if (callback) callback(false);
 		});
 	} else {
-		//remove a single role
+		// remove a single role
 		role = this.getRole(role);
 		if (!role) {
 			if (callback) callback(false);
 			return;
 		}
 
-		client.guilds.get(config.guild).members.get(user.id).addRole(role).then(() => { //success
+		await client.guilds.cache.get(config.guild).members.cache.get(user.id).roles.add(role).then(() => {
+			// success
 			if (callback) callback(true);
-		}, err => { //error
+		}, err => {
+			// error
 			console.log(`ERROR: Couldn't add ${role.name} role to ${user.username} - ${err.message}`);
 			if (callback) callback(false);
 		});
 	}
-}
+};
 
-exports.removeRole = (user, role, callback) => {
+module.exports.removeRole = async (user, role, callback) => {
 	user = this.getUser(user);
 	if (!user) {
 		if (callback) callback(false);
@@ -89,43 +100,47 @@ exports.removeRole = (user, role, callback) => {
 	}
 
 	if (Array.isArray(role)) {
-		//remove multiple roles
-		let roles = role.map(x => this.getRole(x)).filter(Boolean);
+		// remove multiple roles
+		const roles = role.map(x => this.getRole(x)).filter(Boolean);
 
-		client.guilds.get(config.guild).members.get(user.id).removeRoles(roles).then(() => { //success
+		await client.guilds.cache.get(config.guild).members.cache.get(user.id).roles.remove(roles).then(() => {
+			// success
 			if (callback) callback(true);
-		}, err => { //error
+		}, err => {
+			// error
 			console.log(`ERROR: Couldn't remove a role from ${user.username} - ${err.message}`);
 			if (callback) callback(false);
 		});
 	} else {
-		//remove a single role
+		// remove a single role
 		role = this.getRole(role);
 		if (!role) {
 			if (callback) callback(false);
 			return;
 		}
 
-		client.guilds.get(config.guild).members.get(user.id).removeRole(role).then(() => { //success
+		await client.guilds.cache.get(config.guild).members.cache.get(user.id).roles.remove(role).then(() => {
+			// success
 			if (callback) callback(true);
-		}, err => { //error
+		}, err => {
+			// error
 			console.log(`ERROR: Couldn't remove ${role.name} role from ${user.username} - ${err.message}`);
 			if (callback) callback(false);
 		});
 	}
-}
+};
 
-exports.plural = (val, text, suffix = "s", trim = 0) => {
+module.exports.plural = (val, text, suffix = 's', trim = 0) => {
 	if (val === 1) {
 		return text;
 	} else {
 		if (trim) text = text.slice(0, -trim);
 		return text + suffix;
 	}
-}
+};
 
-exports.XMLHttpRequest = (callback, url) => {
-	let xhttp = new XMLHttpRequest();
+module.exports.XMLHttpRequest = (callback, url) => {
+	const xhttp = new XMLHttpRequest();
 	xhttp.onload = function() {
 		if (this.status === 200) {
 			return callback(JSON.parse(xhttp.responseText));
@@ -133,12 +148,12 @@ exports.XMLHttpRequest = (callback, url) => {
 			console.log(`ERROR: Couldn't retrieve data from ${url}`);
 			return callback(null);
 		}
-	}
-	xhttp.open("GET", url, true);
+	};
+	xhttp.open('GET', url, true);
 	xhttp.send();
-}
+};
 
-exports.sendMessage = (channel, text, delete_message = false) => {
+module.exports.sendMessage = (channel, text, delete_message = false) => {
 	channel = this.getChannel(channel);
 	if (!channel) return;
 	channel.send(text).then(message => {
@@ -146,14 +161,16 @@ exports.sendMessage = (channel, text, delete_message = false) => {
 			this.deleteMessage(message, config.delete_response_secs * 1000);
 		}
 	}).catch(err => {
-		console.log(`ERROR: Couldn't send message in #${message.channel.name} - ${err.message}`);
+		console.log(`ERROR: Couldn't send message in #${channel.message.channel.name} - ${err.message}`);
 	});
-}
+};
 
-exports.editMessage = (message, text, delete_message = false, callback) => {
+module.exports.editEmbed = (message, embed, delete_message = false, callback) => {
 	if (!message) return;
-	message.edit(text).then(message => {
-		if (callback) callback();
+	message.edit({ embeds: [embed] }).then(message => {
+		if (callback) {
+			callback();
+		}
 		if (delete_message) {
 			this.deleteMessage(message, config.delete_response_secs * 1000);
 		}
@@ -161,9 +178,24 @@ exports.editMessage = (message, text, delete_message = false, callback) => {
 		if (callback) return callback(err);
 		console.log(`ERROR: Couldn't edit message in #${message.channel.name} - ${err.message}`);
 	});
-}
+};
 
-exports.deleteMessage = (message, delete_message = 0) => {
+module.exports.editMessage = (message, text, delete_message = false, callback) => {
+	if (!message) return;
+	message.edit(text).then(message => {
+		if (callback) {
+			callback();
+		}
+		if (delete_message) {
+			this.deleteMessage(message, config.delete_response_secs * 1000);
+		}
+	}).catch(err => {
+		if (callback) return callback(err);
+		console.log(`ERROR: Couldn't edit message in #${message.channel.name} - ${err.message}`);
+	});
+};
+
+module.exports.deleteMessage = (message, delete_message = 0) => {
 	if (!message || !message.guild) return;
 	if (delete_message) {
 		setTimeout(() => {
@@ -176,26 +208,26 @@ exports.deleteMessage = (message, delete_message = 0) => {
 			console.log(`ERROR: Couldn't delete message in #${message.channel.name} - ${err.message}`);
 		});
 	}
-}
+};
 
-exports.fetchMessage = (callback, cfg_group) => {
-	channel = this.getChannel(cfg_group.channel);
+module.exports.fetchMessage = (callback, cfg_group) => {
+	const channel = this.getChannel(cfg_group.channel);
 	if (!channel) {
-		console.log("ERROR: Couldn't get channel to fetch message");
-		if (callback) callback(null)
+		console.log('ERROR: Couldn\'t get channel to fetch message');
+		if (callback) callback(null);
 		return;
 	}
-	channel.fetchMessage(cfg_group.message).then(message => {
+	channel.messages.fetch(cfg_group.message).then(message => {
 		if (callback) callback(message);
 	}).catch(err => {
 		console.log(`ERROR: Couldn't fetch message from #${channel.name} - ${err.message}`);
 	});
-}
+};
 
-exports.sortServers = (servers) => {
+module.exports.sortServers = (servers) => {
 	if (!servers) return null;
 
-	if (servers.hasOwnProperty("serverList")) {
+	if (Object.prototype.hasOwnProperty.call(servers, 'serverList')) {
 		servers = servers.serverList;
 	} else {
 		return null;
@@ -211,29 +243,29 @@ exports.sortServers = (servers) => {
 		return b.currentPlayers - a.currentPlayers;
 	});
 
-	for (let server of servers) {
+	for (const server of servers) {
 		server.playerList.sort((a, b) => {
 			return a.toLowerCase().localeCompare(b.toLowerCase());
 		});
 	}
 
 	return servers;
-}
+};
 
-exports.isMod = (user) => {
+module.exports.isMod = (user) => {
 	return config.mod_roles.some(role => {
 		return this.userHasRole(user, role);
 	});
-}
+};
 
-exports.updatePresence = (servers) => {
-		let total_players = servers ? servers.reduce((t, x) => t + x.currentPlayers, 0) : 0;
-		let text = `with ${total_players} ${this.plural(total_players, "fishy", "ies", 1)} | ${config.prefix}help`;
-		client.user.setActivity(text, { type: 'PLAYING' });
-}
+module.exports.updatePresence = (servers) => {
+	const total_players = servers ? servers.reduce((t, x) => t + x.currentPlayers, 0) : 0;
+	const text = `with ${total_players} ${this.plural(total_players, 'fishy', 'ies', 1)} | ${config.prefix}help`;
+	client.user.setActivity(text, { type: ActivityType.Watching });
+};
 
-exports.sanitize = (data) => {
-	//add zero width whitespace after the character to prevent the bot mentioning the channel/role/user
-	//escape any discord markdown characters (\ * _ ` ~ >)
-	return data.replace(/([@#])/g, "$1​").replace(/([\\\*_`~>])/g, "\\$1");
-}
+module.exports.sanitize = (data) => {
+	// add zero width whitespace after the character to prevent the bot mentioning the channel/role/user
+	// escape any discord markdown characters (\ * _ ` ~ >)
+	return data.replace(/([@#])/g, '$1​').replace(/([\\*_`~>])/g, '\\$1');
+};
