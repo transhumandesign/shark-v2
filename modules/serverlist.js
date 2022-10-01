@@ -94,7 +94,7 @@ function createEmbed(servers, trimAmount = 0) {
 	}
 
 	// edit message
-	util.editEmbed(server_list, embed, false, err => {
+	util.editMessage(server_list, embed, false, err => {
 		if (err) {
 			// more than 6000 characters in embed
 			if (err.code === 50035) {
