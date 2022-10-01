@@ -1,6 +1,6 @@
 const XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 const config = require('../config.json');
-const { ActivityType } = require('discord.js');
+const { ActivityType, EmbedBuilder } = require('discord.js');
 
 let client;
 
@@ -165,23 +165,13 @@ module.exports.sendMessage = (channel, text, delete_message = false) => {
 	});
 };
 
-module.exports.editEmbed = (message, embed, delete_message = false, callback) => {
-	if (!message) return;
-	message.edit({ embeds: [embed] }).then(message => {
-		if (callback) {
-			callback();
-		}
-		if (delete_message) {
-			this.deleteMessage(message, config.delete_response_secs * 1000);
-		}
-	}).catch(err => {
-		if (callback) return callback(err);
-		console.log(`ERROR: Couldn't edit message in #${message.channel.name} - ${err.message}`);
-	});
-};
-
 module.exports.editMessage = (message, text, delete_message = false, callback) => {
 	if (!message) return;
+
+	if (text instanceof EmbedBuilder) {
+		text = { embeds: [text] };
+	}
+
 	message.edit(text).then(message => {
 		if (callback) {
 			callback();
