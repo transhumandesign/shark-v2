@@ -74,7 +74,7 @@ function createEmbed(servers, trimAmount = 0) {
 				`**Gamemode:** ${util.sanitize(server.gameMode)}${modded}`,
 				`**Players:** ${server.currentPlayers}/${server.maxPlayers}${full}${spectators}`,
 				util.sanitize(server.playerList.join(' ')),
-			].sort(Boolean).reverse().join('\n');
+			].join('\n');
 
 			// truncate text if too long
 			const ellipsis = '…';
