@@ -1,0 +1,40 @@
+{
+	"token": "",
+	"prefix": "!",
+	"guild": "",
+
+	"commands_channel": "",
+	"welcome_channel": "",
+	"rules_channel": "",
+	"information_channel": "",
+
+	"delete_commands": false,
+	"delete_response_secs": 6,
+
+	"mod_roles": [],
+	"regional_roles": [],
+	"open_roles": [],
+	"mod_mentionable_roles": [],
+
+	"update_interval_secs": 60,
+
+	"server_list": {
+		"channel": "",
+		"message": "",
+		"special_channel_name": true,
+		"embed_colour": 3447003
+	},
+
+	"ingame": {
+		"role": "",
+		"check_name": false
+	},
+
+	"advertise": {
+		"channel_queue": "",
+		"channel_publish": "",
+		"delete_resolved_invites": false,
+		"accept_emoji": "👍",
+		"reject_emoji": "👎"
+	}
+}
