@@ -68,7 +68,7 @@ module.exports.onCommand = async (message, command, args) => {
 		if (config.advertise.delete_resolved_invites) {
 			util.deleteMessage(queueMessage);
 		} else {
-			queueMessage.clearReactions();
+			queueMessage.reactions.removeAll();
 			util.editMessage(queueMessage, `${queueMessage.content}\nOutcome: ${accepted ? 'Accepted' : 'Declined'}`);
 		}
 	});

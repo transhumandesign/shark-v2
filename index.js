@@ -3,6 +3,7 @@ const client = new Discord.Client({
 	intents: [
 		Discord.GatewayIntentBits.Guilds,
 		Discord.GatewayIntentBits.GuildMessages,
+		Discord.GatewayIntentBits.GuildMessageReactions,
 		Discord.GatewayIntentBits.MessageContent,
 		Discord.GatewayIntentBits.GuildMembers,
 		Discord.GatewayIntentBits.DirectMessages,
